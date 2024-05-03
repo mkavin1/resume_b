@@ -29,11 +29,11 @@ jobs:
         run: |
           aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
           aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region $AWS_REGION
+          aws configure set region ap-southeast-2
 
       - name: Upload files to S3 bucket
         run: |
-          aws s3 cp --recursive dist/ s3://your-bucket-name/  # Replace with your bucket name
+          aws s3 cp --recursive dist/ s3:${{ secrets.AWS_S3_BUCKET }}  # Replace with your bucket name
           # Adjust the source directory (`dist/`) if your build process creates a different output
 
       - name: (Optional) Verify deployment

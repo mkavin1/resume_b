@@ -28,7 +28,7 @@ jobs:
       - name: Upload to S3
         uses: aws-actions/s3-sync@v2
         with:
-          source-dir: 'Resume_generator/'  # Directory to upload
+          source-dir: 'resume-generator/'  # Directory to upload
           destination-bucket: 'sample-urgent-1111'  # Change to your S3 bucket name
           destination-dir: '/'  # Optional: Directory in the bucket
           extra-args: '--delete'  # Optional: Removes files in S3 not in the local directory

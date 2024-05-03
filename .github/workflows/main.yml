@@ -13,22 +13,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3  # Check out the repository
       
-      - name: Set up Python
-        uses: actions/setup-python@v4  # Optional, if you need Python setup
-        with:
-          python-version: '3.9'
-      
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: 'us-east-1'  # Change to your preferred AWS region
-      
+          aws-region: 'us-east-1'  # Your preferred AWS region
+
       - name: Upload to S3
-        uses: aws-actions/s3-sync@v2
+        uses: jakejarvis/s3-sync-action@v0.5.1  # Corrected action reference
         with:
-          source-dir: 'resume-generator/'  # Directory to upload
-          destination-bucket: 'sample-urgent-1111'  # Change to your S3 bucket name
-          destination-dir: '/'  # Optional: Directory in the bucket
-          extra-args: '--delete'  # Optional: Removes files in S3 not in the local directory
+          args: '--acl private --delete'  # Change ACL and extra arguments as needed
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}  # Your S3 bucket name
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: 'us-east-1'  # Your AWS region

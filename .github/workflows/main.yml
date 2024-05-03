@@ -1,42 +1,34 @@
-name: Deploy to S3
+name: Upload to S3
 
 on:
   push:
-    branches: [ main ]  # Trigger on pushes to the main branch
-
-env:
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  AWS_REGION: ap-southeast-2  # Adjust if your S3 bucket is in a different region
+    branches:
+      - main
 
 jobs:
-  deploy:
+  upload:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3  # Checkout the repository code
-
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-
-      - name: Build the Flask application (if necessary)
-        run: |  # Adapt this step based on your build process
-          python setup.py build
-
-      - name: Configure AWS credentials (securely)
-        run: |
-          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-          aws configure set region ap-southeast-2
-
-      - name: Upload files to S3 bucket
-        run: |
-          aws s3 cp --recursive dist/ s3:${{ secrets.AWS_S3_BUCKET }}  # Replace with your bucket name
-          # Adjust the source directory (`dist/`) if your build process creates a different output
-
-      - name: (Optional) Verify deployment
-        run: |  # Add steps to verify successful deployment to S3 (e.g., using AWS CLI)
-          aws s3 ls s3:${{ secrets.AWS_S3_BUCKET }}  # Example listing to check for uploaded files
-
+      - name: Checkout code
+        uses: actions/checkout@v3  # Check out the repository
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4  # Optional, if you need Python setup
+        with:
+          python-version: '3.9'
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: 'us-east-1'  # Change to your preferred AWS region
+      
+      - name: Upload to S3
+        uses: aws-actions/s3-sync@v2
+        with:
+          source-dir: 'Resume_generator/'  # Directory to upload
+          destination-bucket: 'sample-urgent-1111'  # Change to your S3 bucket name
+          destination-dir: '/'  # Optional: Directory in the bucket
+          extra-args: '--delete'  # Optional: Removes files in S3 not in the local directory

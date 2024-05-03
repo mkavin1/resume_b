@@ -1,20 +1,42 @@
-name : my react app - app
-run-name : ${{ github.actor }}
-on : [push]
+name: Deploy to S3
+
+on:
+  push:
+    branches: [ main ]  # Trigger on pushes to the main branch
+
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_REGION: ap-southeast-2  # Adjust if your S3 bucket is in a different region
+
 jobs:
-  push-to-s3:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-      - name: Run npm
-        run: npm install
-      - name: Run npm build
-        run: npm run build
-      - name: Upload to s3
-        uses: jakejarvis/s3-sync-action@master
-        env:
-          SOURCE_DIR: build/
-          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - uses: actions/checkout@v3  # Checkout the repository code
+
+      - name: Install dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Build the Flask application (if necessary)
+        run: |  # Adapt this step based on your build process
+          python setup.py build
+
+      - name: Configure AWS credentials (securely)
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region $AWS_REGION
+
+      - name: Upload files to S3 bucket
+        run: |
+          aws s3 cp --recursive dist/ s3://your-bucket-name/  # Replace with your bucket name
+          # Adjust the source directory (`dist/`) if your build process creates a different output
+
+      - name: (Optional) Verify deployment
+        run: |  # Add steps to verify successful deployment to S3 (e.g., using AWS CLI)
+          aws s3 ls s3:${{ secrets.AWS_S3_BUCKET }}  # Example listing to check for uploaded files
+
